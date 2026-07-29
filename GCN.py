@@ -5,7 +5,8 @@ GCN
 import os
 import sys
 import threading
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 from tensorflow.python.client import device_lib
 from utility.helper import *
 from utility.batch_test import *
@@ -346,7 +347,7 @@ class GCN(object):
     
     def _convert_sp_mat_to_sp_tensor(self, X):
         coo = X.tocoo().astype(np.float32)
-        indices = np.mat([coo.row, coo.col]).transpose()
+        indices = np.array([coo.row, coo.col]).transpose()
         return tf.SparseTensor(indices, coo.data, coo.shape)
         
     def _dropout_sparse(self, X, keep_prob, n_nonzero_elems):
