@@ -18,7 +18,7 @@ cpus = [x.name for x in device_lib.list_local_devices() if x.device_type == 'CPU
 print(args.pretrain)
 
 class MBCGCN(object):
-    def __init__(self, data_config, pretrain_data, pretrain_data2, pretrain_data3):
+    def __init__(self, data_config, pretrain_data, pretrain_data2, pretrain_data3, pretrain_data4, pretrain_data5):
         # argument settings
         self.model_type = 'MBCGCN'
         self.adj_type = args.adj_type
@@ -27,6 +27,8 @@ class MBCGCN(object):
         self.pretrain_data = pretrain_data 
         self.pretrain_data2 = pretrain_data2
         self.pretrain_data3 = pretrain_data3
+        self.pretrain_data4 = pretrain_data4
+        self.pretrain_data5 = pretrain_data5
 
         self.n_users = data_config['n_users'] 
         self.n_items = data_config['n_items'] 
@@ -34,19 +36,26 @@ class MBCGCN(object):
         self.norm_adj = data_config['norm_adj'] 
         self.norm_adj2 = data_config['norm_adj2']
         self.norm_adj3 = data_config['norm_adj3'] 
+        self.norm_adj4 = data_config['norm_adj4']
+        self.norm_adj5 = data_config['norm_adj5']
 
         self.n_nonzero_elems = self.norm_adj.count_nonzero()
         self.lr = args.lr
         self.emb_dim = args.embed_size
         self.batch_size = args.batch_size
+
         # self.weight_size = eval(args.layer_size) #[64,64,64]
         self.weight_size = eval(args.layer_size2) 
         self.weight_size2 = eval(args.layer_size3) 
         self.weight_size3 = eval(args.layer_size4) 
+        self.weight_size4 = eval(args.layer_size4) 
+        self.weight_size5 = eval(args.layer_size5) 
 
         self.n_layers = len(self.weight_size)  
         self.n_layers2 = len(self.weight_size2) 
-        self.n_layers3 = len(self.weight_size3) 
+        self.n_layers3 = len(self.weight_size3)
+        self.n_layers4 = len(self.weight_size4) 
+        self.n_layers5 = len(self.weight_size5) 
 
         self.regs = eval(args.regs) 
         self.decay = self.regs[0]
@@ -127,20 +136,30 @@ class MBCGCN(object):
         '''
         if self.alg_type in ['mbcgcn']: 
             
-            'The first behavior'
-            self.ua_embeddings1, self.ia_embeddings1 = self._create_mbcgcn_embed3() #The first behavior         
+            'The 1st behavior'
+            self.ua_embeddings1, self.ia_embeddings1 = self._create_mbcgcn_embed5() #The first behavior         
             self.ua_embeddings11 = tf.matmul(self.ua_embeddings1, self.weights_one['W_u1']) #behavior feature transformation(user)
             self.ia_embeddings11 = tf.matmul(self.ia_embeddings1, self.weights_one['W_i1']) #behavior feature transformation(item)
 
-            'The next behavior'
-            self.ua_embeddings2, self.ia_embeddings2 = self._create_mbcgcn_embed2(self.ua_embeddings11,self.ia_embeddings11) 
+            'The 2nd behavior'
+            self.ua_embeddings2, self.ia_embeddings2 = self._create_mbcgcn_embed4(self.ua_embeddings11,self.ia_embeddings11) 
             self.ua_embeddings22 = tf.matmul(self.ua_embeddings2, self.weights_one['W_u2'])
             self.ia_embeddings22 = tf.matmul(self.ia_embeddings2, self.weights_one['W_i2'])
 
+            'The 3rd behavior'
+            self.ua_embeddings3, self.ia_embeddings3 = self._create_mbcgcn_embed3(self.ua_embeddings22,self.ia_embeddings22) 
+            self.ua_embeddings33 = tf.matmul(self.ua_embeddings3, self.weights_one['W_u3'])
+            self.ia_embeddings33 = tf.matmul(self.ia_embeddings3, self.weights_one['W_i3'])
+
+            'The 4th behavior'
+            self.ua_embeddings4, self.ia_embeddings4 = self._create_mbcgcn_embed2(self.ua_embeddings33,self.ia_embeddings33) 
+            self.ua_embeddings44 = tf.matmul(self.ua_embeddings4, self.weights_one['W_u4'])
+            self.ia_embeddings44 = tf.matmul(self.ia_embeddings4, self.weights_one['W_i4'])
+
             'The last behavior'
-            self.ua_embeddings3, self.ia_embeddings3 = self._create_mbcgcn_embed(self.ua_embeddings22,self.ia_embeddings22) 
-            self.ua_embeddings = self.ua_embeddings1 + self.ua_embeddings2 + self.ua_embeddings3
-            self.ia_embeddings = self.ia_embeddings1 + self.ia_embeddings2 + self.ia_embeddings3
+            self.ua_embeddings5, self.ia_embeddings5 = self._create_mbcgcn_embed(self.ua_embeddings44,self.ia_embeddings44) 
+            self.ua_embeddings = self.ua_embeddings1 + self.ua_embeddings2 + self.ua_embeddings3 + self.ua_embeddings4 + self.ua_embeddings5
+            self.ia_embeddings = self.ia_embeddings1 + self.ia_embeddings2 + self.ia_embeddings3 + self.ia_embeddings4 + self.ia_embeddings5
 
 
         """
@@ -195,29 +214,45 @@ class MBCGCN(object):
             all_weights_one['item_embedding2'] = tf.Variable(initializer([self.n_items, self.emb_dim]), name='item_embedding2')
             all_weights_one['user_embedding3'] = tf.Variable(initializer([self.n_users, self.emb_dim]), name='user_embedding3')
             all_weights_one['item_embedding3'] = tf.Variable(initializer([self.n_items, self.emb_dim]), name='item_embedding3')
+            all_weights_one['user_embedding4'] = tf.Variable(initializer([self.n_users, self.emb_dim]), name='user_embedding4')
+            all_weights_one['item_embedding4'] = tf.Variable(initializer([self.n_items, self.emb_dim]), name='item_embedding4')
+            all_weights_one['user_embedding5'] = tf.Variable(initializer([self.n_users, self.emb_dim]), name='user_embedding5')
+            all_weights_one['item_embedding5'] = tf.Variable(initializer([self.n_items, self.emb_dim]), name='item_embedding5')
             print('using random initialization')#print('using xavier initialization') 
         else: 
-            all_weights_one['user_embedding1'] = tf.Variable(initial_value=self.pretrain_data3['user_embed'], trainable=True,
+            all_weights_one['user_embedding1'] = tf.Variable(initial_value=self.pretrain_data5['user_embed'], trainable=True,
                                                         name='user_embedding1', dtype=tf.float32) 
-            all_weights_one['item_embedding1'] = tf.Variable(initial_value=self.pretrain_data3['item_embed'], trainable=True,
+            all_weights_one['item_embedding1'] = tf.Variable(initial_value=self.pretrain_data5['item_embed'], trainable=True,
                                                         name='item_embedding1', dtype=tf.float32) 
-            all_weights_one['user_embedding2'] = tf.Variable(initial_value=self.pretrain_data3['user_embed'], trainable=True,
+            all_weights_one['user_embedding2'] = tf.Variable(initial_value=self.pretrain_data4['user_embed'], trainable=True,
                                                         name='user_embedding2', dtype=tf.float32)
-            all_weights_one['item_embedding2'] = tf.Variable(initial_value=self.pretrain_data3['item_embed'], trainable=True,
+            all_weights_one['item_embedding2'] = tf.Variable(initial_value=self.pretrain_data4['item_embed'], trainable=True,
                                                         name='item_embedding2', dtype=tf.float32)
             all_weights_one['user_embedding3'] = tf.Variable(initial_value=self.pretrain_data3['user_embed'], trainable=True,
                                                         name='user_embedding3', dtype=tf.float32)
             all_weights_one['item_embedding3'] = tf.Variable(initial_value=self.pretrain_data3['item_embed'], trainable=True,
                                                         name='item_embedding3', dtype=tf.float32)
+            all_weights_one['user_embedding4'] = tf.Variable(initial_value=self.pretrain_data2['user_embed'], trainable=True,
+                                                        name='user_embedding4', dtype=tf.float32)
+            all_weights_one['item_embedding4'] = tf.Variable(initial_value=self.pretrain_data2['item_embed'], trainable=True,
+                                                        name='item_embedding4', dtype=tf.float32)
+            all_weights_one['user_embedding5'] = tf.Variable(initial_value=self.pretrain_data['user_embed'], trainable=True,
+                                                        name='user_embedding5', dtype=tf.float32)
+            all_weights_one['item_embedding5'] = tf.Variable(initial_value=self.pretrain_data['item_embed'], trainable=True,
+                                                        name='item_embedding5', dtype=tf.float32)
             print(all_weights_one)
             print('using pretrained initialization')
 
         'user'
         all_weights_one['W_u1'] = tf.Variable(initializer([self.emb_dim, self.emb_dim]), name='W_u1')
         all_weights_one['W_u2'] = tf.Variable(initializer([self.emb_dim, self.emb_dim]), name='W_u2')
+        all_weights_one['W_u3'] = tf.Variable(initializer([self.emb_dim, self.emb_dim]), name='W_u3')
+        all_weights_one['W_u4'] = tf.Variable(initializer([self.emb_dim, self.emb_dim]), name='W_u4')
         'item'
         all_weights_one['W_i1'] = tf.Variable(initializer([self.emb_dim, self.emb_dim]), name='W_i1')
         all_weights_one['W_i2'] = tf.Variable(initializer([self.emb_dim, self.emb_dim]), name='W_i2')
+        all_weights_one['W_i3'] = tf.Variable(initializer([self.emb_dim, self.emb_dim]), name='W_i3')
+        all_weights_one['W_i4'] = tf.Variable(initializer([self.emb_dim, self.emb_dim]), name='W_i4')
         return all_weights_one 
 
     def _split_A_hat(self, X): 
@@ -255,6 +290,7 @@ class MBCGCN(object):
             A_fold_hat = self._split_A_hat_node_dropout(self.norm_adj)
         else:
             A_fold_hat = self._split_A_hat(self.norm_adj)
+
         ego_embeddings1 = tf.concat([user_embedding, item_embedding], axis=0)
         all_embeddings = [ego_embeddings1]
         
@@ -295,14 +331,15 @@ class MBCGCN(object):
         u_g_embeddings2, i_g_embeddings2 = tf.split(all_embeddings, [self.n_users, self.n_items], 0)
         return u_g_embeddings2, i_g_embeddings2        
     
-    def _create_mbcgcn_embed3(self):
+    def _create_mbcgcn_embed3(self, user_embedding, item_embedding):
         if self.node_dropout_flag:
             A_fold_hat = self._split_A_hat_node_dropout(self.norm_adj3)
         else:
             A_fold_hat = self._split_A_hat(self.norm_adj3)
         
-        ego_embeddings3 = tf.concat([self.weights_one['user_embedding3'], self.weights_one['item_embedding3']], axis=0)
+        ego_embeddings3 = tf.concat([user_embedding, item_embedding], axis=0)
         all_embeddings = [ego_embeddings3]
+
         for k in range(0, self.n_layers3):
 
             temp_embed = []
@@ -317,12 +354,57 @@ class MBCGCN(object):
         u_g_embeddings3, i_g_embeddings3 = tf.split(all_embeddings, [self.n_users, self.n_items], 0)
         return u_g_embeddings3, i_g_embeddings3        
 
+    def _create_mbcgcn_embed4(self, user_embedding, item_embedding): 
+        if self.node_dropout_flag:
+            A_fold_hat = self._split_A_hat_node_dropout(self.norm_adj4)
+        else:
+            A_fold_hat = self._split_A_hat(self.norm_adj4)
+
+        ego_embeddings4 = tf.concat([user_embedding, item_embedding], axis=0)
+        all_embeddings = [ego_embeddings4]
+        
+        for k in range(0, self.n_layers4):
+
+            temp_embed = []
+            for f in range(self.n_fold):
+                temp_embed.append(tf.sparse_tensor_dense_matmul(A_fold_hat[f], ego_embeddings4))
+
+            side_embeddings4 = tf.concat(temp_embed, 0)
+            ego_embeddings4 = side_embeddings4
+            all_embeddings += [ego_embeddings4]  
+        all_embeddings=tf.stack(all_embeddings,1)
+        all_embeddings=tf.reduce_mean(all_embeddings,axis=1,keepdims=False)
+        u_g_embeddings4, i_g_embeddings4 = tf.split(all_embeddings, [self.n_users, self.n_items], 0)
+        return u_g_embeddings4, i_g_embeddings4
+
+    def _create_mbcgcn_embed5(self): 
+        if self.node_dropout_flag:
+            A_fold_hat = self._split_A_hat_node_dropout(self.norm_adj5)
+        else:
+            A_fold_hat = self._split_A_hat(self.norm_adj5)
+
+        ego_embeddings5 = tf.concat([self.weights_one['user_embedding3'], self.weights_one['item_embedding3']], axis=0)
+        all_embeddings = [ego_embeddings5]
+        
+        for k in range(0, self.n_layers5):
+
+            temp_embed = []
+            for f in range(self.n_fold):
+                temp_embed.append(tf.sparse_tensor_dense_matmul(A_fold_hat[f], ego_embeddings5))
+
+            side_embeddings5 = tf.concat(temp_embed, 0)
+            ego_embeddings5 = side_embeddings5
+            all_embeddings += [ego_embeddings5]  
+        all_embeddings=tf.stack(all_embeddings,1)
+        all_embeddings=tf.reduce_mean(all_embeddings,axis=1,keepdims=False)
+        u_g_embeddings5, i_g_embeddings5 = tf.split(all_embeddings, [self.n_users, self.n_items], 0)
+        return u_g_embeddings5, i_g_embeddings5
 
 
     def create_bpr_loss(self, users, pos_items, neg_items): 
         pos_scores = tf.reduce_sum(tf.multiply(users, pos_items), axis=1) #self._create_attention(users, users2, users3, pos_items, pos_items2, pos_items3, neg_items)
         neg_scores = tf.reduce_sum(tf.multiply(users, neg_items), axis=1)
-        regularizer = tf.nn.l2_loss(self.u_g_embeddings_pre) + tf.nn.l2_loss(self.pos_i_g_embeddings_pre) + tf.nn.l2_loss(self.neg_i_g_embeddings_pre) + tf.nn.l2_loss(self.weights_one['W_u1'])+ tf.nn.l2_loss(self.weights_one['W_u2']) + tf.nn.l2_loss(self.weights_one['W_i1']) +tf.nn.l2_loss(self.weights_one['W_i2'])
+        regularizer = tf.nn.l2_loss(self.u_g_embeddings_pre) + tf.nn.l2_loss(self.pos_i_g_embeddings_pre) + tf.nn.l2_loss(self.neg_i_g_embeddings_pre) + tf.nn.l2_loss(self.weights_one['W_u1'])+ tf.nn.l2_loss(self.weights_one['W_u2']) + tf.nn.l2_loss(self.weights_one['W_u3']) + tf.nn.l2_loss(self.weights_one['W_u4']) + tf.nn.l2_loss(self.weights_one['W_i1']) + tf.nn.l2_loss(self.weights_one['W_i2']) + tf.nn.l2_loss(self.weights_one['W_i3']) + tf.nn.l2_loss(self.weights_one['W_i4'])
         regularizer = regularizer / self.batch_size        
         mf_loss = tf.reduce_mean(tf.nn.softplus(-(pos_scores - neg_scores))) #BPR        
         emb_loss = self.decay * regularizer 
@@ -350,16 +432,22 @@ def load_pretrained_data():
     pretrain_path = '%spretrain/%s/%s.npz' % (args.proj_path, args.dataset, 'embedding') 
     pretrain_path2 = '%spretrain/%s/%s.npz' % (args.proj_path2, args.dataset, 'embedding')
     pretrain_path3 = '%spretrain/%s/%s.npz' % (args.proj_path3, args.dataset, 'embedding')
+    pretrain_path4 = '%spretrain/%s/%s.npz' % (args.proj_path4, args.dataset, 'embedding')
+    pretrain_path5 = '%spretrain/%s/%s.npz' % (args.proj_path5, args.dataset, 'embedding')
     try: 
         pretrain_data = np.load(pretrain_path)
         pretrain_data2 = np.load(pretrain_path2)
         pretrain_data3 = np.load(pretrain_path3)
+        pretrain_data4 = np.load(pretrain_path4)
+        pretrain_data5 = np.load(pretrain_path5)
         print('load the pretrained embeddings.') 
     except Exception:
         pretrain_data = None
         pretrain_data2 = None
         pretrain_data3 = None
-    return pretrain_data, pretrain_data2, pretrain_data3
+        pretrain_data4 = None
+        pretrain_data4 = None
+    return pretrain_data, pretrain_data2, pretrain_data3, pretrain_data4, pretrain_data5
 
 
 # parallelized sampling on CPU 
@@ -424,6 +512,8 @@ if __name__ == '__main__':
     plain_adj, norm_adj, mean_adj,pre_adj = data_generator.get_adj_mat() 
     plain_adj2, norm_adj2, mean_adj2,pre_adj2 = data_generator2.get_adj_mat()
     plain_adj3, norm_adj3, mean_adj3,pre_adj3 = data_generator3.get_adj_mat() 
+    plain_adj4, norm_adj4, mean_adj4,pre_adj4 = data_generator4.get_adj_mat() 
+    plain_adj5, norm_adj5, mean_adj5,pre_adj5 = data_generator5.get_adj_mat() 
 
     if args.adj_type == 'plain':
         config['norm_adj'] = plain_adj
@@ -438,6 +528,8 @@ if __name__ == '__main__':
         config['norm_adj']=pre_adj
         config['norm_adj2']=pre_adj2
         config['norm_adj3']=pre_adj3 
+        config['norm_adj4']=pre_adj4 
+        config['norm_adj5']=pre_adj5 
         print('use the pre adjcency matrix')
     else:
         config['norm_adj'] = mean_adj + sp.eye(mean_adj.shape[0])
@@ -449,6 +541,8 @@ if __name__ == '__main__':
         pretrain_data = None
         pretrain_data2 = None
         pretrain_data3 = None
+        pretrain_data4 = None
+        pretrain_data5 = None
     """
     *********************************************************
     Save the model parameters.
@@ -465,11 +559,15 @@ if __name__ == '__main__':
         pretrain_path = f"{args.weights_path}{args.dataset1}/GCN/{layer}/l{args.lr}_r{'-'.join([str(r) for r in eval(args.regs)])}"
         pretrain_path2 = f"{args.weights_path}{args.dataset2}/GCN/{layer}/l{args.lr}_r{'-'.join([str(r) for r in eval(args.regs)])}"
         pretrain_path3 = f"{args.weights_path}{args.dataset3}/GCN/{layer}/l{args.lr}_r{'-'.join([str(r) for r in eval(args.regs)])}"
+        pretrain_path4 = f"{args.weights_path}{args.dataset4}/GCN/{layer}/l{args.lr}_r{'-'.join([str(r) for r in eval(args.regs)])}"
+        pretrain_path5 = f"{args.weights_path}{args.dataset5}/GCN/{layer}/l{args.lr}_r{'-'.join([str(r) for r in eval(args.regs)])}"
         print(pretrain_path)
         ckpt = tf.train.get_checkpoint_state(os.path.dirname(pretrain_path + '/checkpoint')) 
         print(ckpt)
         ckpt2 = tf.train.get_checkpoint_state(os.path.dirname(pretrain_path2 + '/checkpoint'))
         ckpt3 = tf.train.get_checkpoint_state(os.path.dirname(pretrain_path3 + '/checkpoint'))
+        ckpt4 = tf.train.get_checkpoint_state(os.path.dirname(pretrain_path4 + '/checkpoint'))
+        ckpt5 = tf.train.get_checkpoint_state(os.path.dirname(pretrain_path5 + '/checkpoint'))
         if ckpt and ckpt.model_checkpoint_path:
             with tf.Session() as sess:
                 saver=tf.train.import_meta_graph(ckpt.model_checkpoint_path + '.meta') 
@@ -531,7 +629,7 @@ if __name__ == '__main__':
     else:
         cur_best_pre_0 = 0.
         print('without pretraining.')
-    model = MBCGCN(data_config=config, pretrain_data=pretrain_data, pretrain_data2=pretrain_data2, pretrain_data3=pretrain_data3) #创建模型类的对象
+    model = MBCGCN(data_config=config, pretrain_data=pretrain_data, pretrain_data2=pretrain_data2, pretrain_data3=pretrain_data3, pretrain_data4=pretrain_data4, pretrain_data5=pretrain_data5) #创建模型类的对象
 
     
     'Save'
