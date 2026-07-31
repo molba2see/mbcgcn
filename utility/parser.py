@@ -27,7 +27,7 @@ def parse_args():
     parser.add_argument('--layer_size5', nargs='?', default='[64]', help='Output sizes of every layer')
     
 
-    parser.add_argument('--batch_size', type=int, default=2048, help='Batch size.') 
+    parser.add_argument('--batch_size', type=int, default=1024, help='Batch size.') 
 
     parser.add_argument('--regs', nargs='?', default='[1e-4]', help='Regularizations.')
     parser.add_argument('--lr', type=float, default=0.001, help='Learning rate.')
