@@ -5,6 +5,21 @@ __author__ = "0"
 import os
 import re
 
+LOG_FILE = None
+
+def set_log_file(path):
+    global LOG_FILE
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    LOG_FILE = open(path, "a")
+
+def log(msg, console=False):
+    if LOG_FILE:
+        LOG_FILE.write(msg + "\n")
+        LOG_FILE.flush()
+
+    if console:
+        print(msg)
+
 def txt2list(file_src):
     orig_file = open(file_src, "r")
     lines = orig_file.readlines()

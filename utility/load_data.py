@@ -2,6 +2,7 @@ import numpy as np
 import random as rd
 import scipy.sparse as sp
 from time import time
+from utility.helper import log
 
 class Data(object):
     def __init__(self, path, batch_size):
@@ -40,7 +41,7 @@ class Data(object):
                     self.n_test += len(items)
         self.n_items += 1
         self.n_users += 1
-        self.print_statistics()
+        self.log_statistics()
 
         # ------------------------------------------------------------
         # R 행렬 생성 (최적화: 한 줄씩 대입 대신 배열을 모아 coo_matrix로 한 번에 생성)
@@ -64,7 +65,7 @@ class Data(object):
         self.R = sp.coo_matrix(
             (data, (rows, cols)), shape=(self.n_users, self.n_items)
         ).tocsr()
-        print('R matrix built', self.R.shape, time() - t0)
+        log('R matrix built', self.R.shape, time() - t0)
 
         with open(test_file) as f_test:
             for l in f_test.readlines():
@@ -84,7 +85,7 @@ class Data(object):
             adj_mat = sp.load_npz(self.path + '/s_adj_mat.npz')
             norm_adj_mat = sp.load_npz(self.path + '/s_norm_adj_mat.npz')
             mean_adj_mat = sp.load_npz(self.path + '/s_mean_adj_mat.npz')
-            print('already load adj matrix', adj_mat.shape, time() - t1)
+            log('already load adj matrix', adj_mat.shape, time() - t1)
 
         except Exception:
             adj_mat, norm_adj_mat, mean_adj_mat = self.create_adj_mat()
@@ -103,7 +104,7 @@ class Data(object):
             d_mat_inv = sp.diags(d_inv)
             norm_adj = d_mat_inv.dot(adj_mat)
             norm_adj = norm_adj.dot(d_mat_inv)
-            print('generate pre adjacency matrix.')
+            log('generate pre adjacency matrix.')
             pre_adj_mat = norm_adj.tocsr()
             sp.save_npz(self.path + '/s_pre_adj_mat.npz', norm_adj)
 
@@ -121,7 +122,7 @@ class Data(object):
         adj_mat = sp.bmat(
             [[zero_uu, R], [R.T, zero_ii]], format='csr', dtype=np.float32
         )
-        print('already create adjacency matrix', adj_mat.shape, time() - t1)
+        log('already create adjacency matrix', adj_mat.shape, time() - t1)
 
         t2 = time()
 
@@ -132,13 +133,13 @@ class Data(object):
             d_mat_inv = sp.diags(d_inv)
 
             norm_adj = d_mat_inv.dot(adj)
-            print('generate single-normalized adjacency matrix.')
+            log('generate single-normalized adjacency matrix.')
             return norm_adj.tocoo()
 
         norm_adj_mat = normalized_adj_single(adj_mat + sp.eye(adj_mat.shape[0]))
         mean_adj_mat = normalized_adj_single(adj_mat)
 
-        print('already normalize adjacency matrix', time() - t2)
+        log('already normalize adjacency matrix', time() - t2)
         return adj_mat.tocsr(), norm_adj_mat.tocsr(), mean_adj_mat.tocsr()
 
     def negative_pool(self):
@@ -147,7 +148,7 @@ class Data(object):
             neg_items = list(set(range(self.n_items)) - set(self.train_items[u]))
             pools = [rd.choice(neg_items) for _ in range(100)]
             self.neg_pools[u] = pools
-        print('refresh negative pools', time() - t1)
+        log('refresh negative pools', time() - t1)
 
     def sample(self):
         if self.batch_size <= self.n_users:
@@ -225,10 +226,10 @@ class Data(object):
     def get_num_users_items(self):
         return self.n_users, self.n_items
 
-    def print_statistics(self):
-        print('n_users=%d, n_items=%d' % (self.n_users, self.n_items))
-        print('n_interactions=%d' % (self.n_train + self.n_test))
-        print('n_train=%d, n_test=%d, sparsity=%.5f' % (
+    def log_statistics(self):
+        log('n_users=%d, n_items=%d' % (self.n_users, self.n_items))
+        log('n_interactions=%d' % (self.n_train + self.n_test))
+        log('n_train=%d, n_test=%d, sparsity=%.5f' % (
             self.n_train, self.n_test, (self.n_train + self.n_test) / (self.n_users * self.n_items)))
 
     def get_sparsity_split(self):
@@ -239,10 +240,10 @@ class Data(object):
             for idx, line in enumerate(lines):
                 if idx % 2 == 0:
                     split_state.append(line.strip())
-                    print(line.strip())
+                    log(line.strip())
                 else:
                     split_uids.append([int(uid) for uid in line.strip().split(' ')])
-            print('get sparsity split.')
+            log('get sparsity split.')
 
         except Exception:
             split_uids, split_state = self.create_sparsity_split()
@@ -250,7 +251,7 @@ class Data(object):
             for idx in range(len(split_state)):
                 f.write(split_state[idx] + '\n')
                 f.write(' '.join([str(uid) for uid in split_uids[idx]]) + '\n')
-            print('create sparsity split.')
+            log('create sparsity split.')
 
         return split_uids, split_state
 
@@ -285,7 +286,7 @@ class Data(object):
                 split_uids.append(temp)
                 state = '#inter per user<=[%d], #users=[%d], #all rates=[%d]' % (n_iids, len(temp), n_rates)
                 split_state.append(state)
-                print(state)
+                log(state)
                 temp = []
                 n_rates = 0
                 fold -= 1
@@ -294,6 +295,6 @@ class Data(object):
                 split_uids.append(temp)
                 state = '#inter per user<=[%d], #users=[%d], #all rates=[%d]' % (n_iids, len(temp), n_rates)
                 split_state.append(state)
-                print(state)
+                log(state)
 
         return split_uids, split_state
