@@ -6,6 +6,8 @@ from utility.load_data import *
 from evaluator.evaluate_foldout import eval_score_matrix_foldout
 import multiprocessing
 import numpy as np
+import os
+
 cores = multiprocessing.cpu_count() // 2
 
 args = parse_args()
