@@ -3,7 +3,7 @@ MBCGCN
 '''
 from utility.parser import parse_args
 from utility.load_data import *
-from evaluator import eval_score_matrix_foldout
+from evaluator.evaluate_foldout import eval_score_matrix_foldout
 import multiprocessing
 import numpy as np
 cores = multiprocessing.cpu_count() // 2
