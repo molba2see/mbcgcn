@@ -14,7 +14,6 @@ def set_log_file(path):
 
 def log(*args, console=False):
     msg = " ".join(str(x) for x in args)
-    print(msg)
     if LOG_FILE:
         LOG_FILE.write(msg + "\n")
         LOG_FILE.flush()
