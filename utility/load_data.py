@@ -202,10 +202,11 @@ class Data(object):
         return users, pos_items, neg_items
 
     def sample_test(self):
-        if self.batch_size <= self.n_users:
-            users = rd.sample(list(self.test_set.keys()), self.batch_size)
+        test_users = list(self.test_set.keys())
+        if self.batch_size <= len(test_users):
+            users = rd.sample(test_users, self.batch_size)
         else:
-            users = [rd.choice(self.exist_users) for _ in range(self.batch_size)]
+            users = [rd.choice(test_users) for _ in range(self.batch_size)]
 
         def sample_pos_items_for_u(u, num):
             pos_items = self.test_set[u]

@@ -17,7 +17,7 @@ def parse_args():
     parser.add_argument('--pretrain', type=int, default=0, help='0: No pretrain, -1: Pretrain with the learned embeddings, 1:Pretrain with stored models.') 
     parser.add_argument('--verbose', type=int, default=1, help='Interval of evaluation.')  
     parser.add_argument('--is_norm', type=int, default=1, help='Interval of evaluation.')
-    parser.add_argument('--epoch', type=int, default=1000, help='Number of epoch.')
+    parser.add_argument('--epoch', type=int, default=100, help='Number of epoch.')
 
     parser.add_argument('--embed_size', type=int, default=64, help='Embedding size.')
     parser.add_argument('--layer_size', nargs='?', default='[64, 64, 64]', help='Output sizes of every layer') 
