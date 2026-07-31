@@ -463,8 +463,7 @@ if __name__ == '__main__':
 
     if args.save_flag == 1:
         layer = '-'.join([str(l) for l in eval(args.layer_size)])
-        weights_save_path = '%sweights/%s/%s/%s/l%s_r%s' % (args.weights_path, args.dataset, model.model_type, layer,
-                                                            str(args.lr), '-'.join([str(r) for r in eval(args.regs)]))
+        weights_save_path = '%sweights/%s_%s' % (args.weights_path, args.dataset, model.model_type)
         ensureDir(weights_save_path)
         save_saver = tf.train.Saver(max_to_keep=1)
 
@@ -479,8 +478,7 @@ if __name__ == '__main__':
     if args.pretrain == 1:
         layer = '-'.join([str(l) for l in eval(args.layer_size)])
 
-        pretrain_path = '%sweights/%s/%s/%s/l%s_r%s' % (args.weights_path, args.dataset, model.model_type, layer,
-                                                        str(args.lr), '-'.join([str(r) for r in eval(args.regs)]))
+        pretrain_path = '%sweights/%s_%s' % (args.weights_path, args.dataset, model.model_type)
 
 
         ckpt = tf.train.get_checkpoint_state(os.path.dirname(pretrain_path + '/checkpoint'))
@@ -522,7 +520,7 @@ if __name__ == '__main__':
         users_to_test_list.append(list(data_generator.test_set.keys()))
         split_state.append('all')
          
-        report_path = '%sreport/%s/%s.result' % (args.proj_path, args.dataset, model.model_type)
+        report_path = '%sresult/%s_%s.result' % (args.weights_path, args.dataset, model.model_type)
         ensureDir(report_path)
         f = open(report_path, 'w')
         f.write(
@@ -700,7 +698,7 @@ if __name__ == '__main__':
                   '\t'.join(['%.5f' % r for r in ndcgs[idx]]))
     print(final_perf)
 
-    save_path = '%soutput/%s/%s.result' % (args.proj_path, args.dataset, model.model_type)
+    save_path = '%sresult/%s_%s.result' % (args.weights_path, args.dataset, model.model_type)
     ensureDir(save_path)
     f = open(save_path, 'a')
 

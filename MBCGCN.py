@@ -555,12 +555,11 @@ if __name__ == '__main__':
     """
     if args.pretrain == 1:
         layer = '-'.join([str(l) for l in eval(args.layer_size)])
-        model_type = 'GCN'
-        pretrain_path = f"{args.weights_path}{args.dataset1}/GCN/{layer}/l{args.lr}_r{'-'.join([str(r) for r in eval(args.regs)])}"
-        pretrain_path2 = f"{args.weights_path}{args.dataset2}/GCN/{layer}/l{args.lr}_r{'-'.join([str(r) for r in eval(args.regs)])}"
-        pretrain_path3 = f"{args.weights_path}{args.dataset3}/GCN/{layer}/l{args.lr}_r{'-'.join([str(r) for r in eval(args.regs)])}"
-        pretrain_path4 = f"{args.weights_path}{args.dataset4}/GCN/{layer}/l{args.lr}_r{'-'.join([str(r) for r in eval(args.regs)])}"
-        pretrain_path5 = f"{args.weights_path}{args.dataset5}/GCN/{layer}/l{args.lr}_r{'-'.join([str(r) for r in eval(args.regs)])}"
+        pretrain_path = f"{args.weights_path}weights/{args.dataset1}_GCN"
+        pretrain_path2 = f"{args.weights_path}weights/{args.dataset2}_GCN"
+        pretrain_path3 = f"{args.weights_path}weights/{args.dataset3}_GCN"
+        pretrain_path4 = f"{args.weights_path}weights/{args.dataset4}_GCN"
+        pretrain_path5 = f"{args.weights_path}weights/{args.dataset5}_GCN"
         print(pretrain_path)
         ckpt = tf.train.get_checkpoint_state(os.path.dirname(pretrain_path + '/checkpoint')) 
         print(ckpt)
@@ -635,10 +634,9 @@ if __name__ == '__main__':
     'Save'
     # saver = tf.train.Saver()
     if args.save_flag == 1:  
-        model_type = 'GCN'
+        model_type = 'MBCGCN'
         layer = '-'.join([str(l) for l in eval(args.layer_size)])
-        weights_save_path = '%sweights_one/%s/%s/%s/l%s_r%s' % (args.weights_path, args.dataset, model_type, layer,
-                                                            str(args.lr), '-'.join([str(r) for r in eval(args.regs)])) 
+        weights_save_path = '%sweights/%s_%s' % (args.weights_path, args.dataset, model.model_type) 
         ensureDir(weights_save_path)
         save_saver = tf.train.Saver(max_to_keep=1)
 
@@ -655,7 +653,7 @@ if __name__ == '__main__':
         users_to_test_list.append(list(data_generator.test_set.keys()))
         split_state.append('all')
          
-        report_path = '%sreport/%s/%s.result' % (args.proj_path, args.dataset, model.model_type)
+        report_path = '%sresult/%s_%s.result' % (args.weights_path, args.dataset, model.model_type)
         ensureDir(report_path)
         f = open(report_path, 'w')
         f.write(
@@ -836,7 +834,7 @@ if __name__ == '__main__':
                   '\t'.join(['%.5f' % r for r in ndcgs[idx]]))
     print(final_perf)
 
-    save_path = '%soutput/%s/%s.result2' % (args.proj_path, args.dataset, model.model_type)
+    save_path = '%sresult/%s_%s.result' % (args.weights_path, args.dataset, model.model_type)
     ensureDir(save_path)
     f = open(save_path, 'a')
 
