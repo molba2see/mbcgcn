@@ -1,19 +1,3 @@
-'''
-MBCGCN - load_data.py (대규모 데이터셋용 최적화 버전)
-================================================================================
-원본과 인터페이스(클래스명, 메서드명, 반환값)는 동일합니다. GCN.py / MBCGCN.py 쪽
-코드는 수정할 필요 없습니다.
-
-바뀐 부분:
-  1) self.R 생성: 128만 건을 dok_matrix에 한 줄씩 대입하던 파이썬 루프
-     -> np.array + sp.coo_matrix 로 한 번에 생성 (수백 배 빠름)
-  2) create_adj_mat(): 97만x97만 규모 행렬을 5등분 슬라이스+tolil() 대입으로
-     조립하던 방식 -> sp.bmat() 으로 R/R.T를 블록 배치해 한 번에 생성
-     (원본 방식은 원 논문 데이터(tmall, 유저 수만 단위) 기준 코드라 유저 85만
-      규모에서는 사실상 끝나지 않는 수준으로 느립니다)
-  3) normalized_adj_single()은 이미 sparse 연산 기반이라 그대로 유지, 다만
-     rowsum 브로드캐스팅 부분만 안전하게 처리
-'''
 import numpy as np
 import random as rd
 import scipy.sparse as sp

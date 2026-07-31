@@ -14,6 +14,10 @@ os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
 cpus = [x.name for x in device_lib.list_local_devices() if x.device_type == 'CPU']
 
+log_path = os.path.join(args.weights_path, "result", f"{args.dataset}_train.log")
+ensureDir(log_path)
+log_file = open(log_path, "a")
+
 class GCN(object):
     def __init__(self, data_config, pretrain_data):
         # argument settings
@@ -160,13 +164,13 @@ class GCN(object):
         if self.pretrain_data is None:
             all_weights['user_embedding'] = tf.Variable(initializer([self.n_users, self.emb_dim]), name='user_embedding')
             all_weights['item_embedding'] = tf.Variable(initializer([self.n_items, self.emb_dim]), name='item_embedding')
-            print('using random initialization')#print('using xavier initialization')
+            log_file.write("\n" + 'using random initialization')#log_file.write("\n" + 'using xavier initialization')
         else:
             all_weights['user_embedding'] = tf.Variable(initial_value=self.pretrain_data['user_embed'], trainable=True,
                                                         name='user_embedding', dtype=tf.float32)
             all_weights['item_embedding'] = tf.Variable(initial_value=self.pretrain_data['item_embed'], trainable=True,
                                                         name='item_embedding', dtype=tf.float32)
-            print('using pretrained initialization')
+            log_file.write("\n" + 'using pretrained initialization')
             
         self.weight_size_list = [self.emb_dim] + self.weight_size
         
@@ -366,7 +370,7 @@ def load_pretrained_data():
     pretrain_path = '%spretrain/%s/%s.npz' % (args.proj_path, args.dataset, 'embedding')
     try:
         pretrain_data = np.load(pretrain_path)
-        print('load the pretrained embeddings.')
+        log_file.write("\n" + 'load the pretrained embeddings.')
     except Exception:
         pretrain_data = None
     return pretrain_data
@@ -435,19 +439,19 @@ if __name__ == '__main__':
     plain_adj, norm_adj, mean_adj,pre_adj = data_generator.get_adj_mat()
     if args.adj_type == 'plain':
         config['norm_adj'] = plain_adj
-        print('use the plain adjacency matrix')
+        log_file.write("\n" + 'use the plain adjacency matrix')
     elif args.adj_type == 'norm':
         config['norm_adj'] = norm_adj
-        print('use the normalized adjacency matrix')
+        log_file.write("\n" + 'use the normalized adjacency matrix')
     elif args.adj_type == 'gcmc':
         config['norm_adj'] = mean_adj
-        print('use the gcmc adjacency matrix')
+        log_file.write("\n" + 'use the gcmc adjacency matrix')
     elif args.adj_type=='pre':
         config['norm_adj']=pre_adj
-        print('use the pre adjcency matrix')
+        log_file.write("\n" + 'use the pre adjcency matrix')
     else:
         config['norm_adj'] = mean_adj + sp.eye(mean_adj.shape[0])
-        print('use the mean adjacency matrix')
+        log_file.write("\n" + 'use the mean adjacency matrix')
     t0 = time()
     if args.pretrain == -1:
         pretrain_data = load_pretrained_data()
@@ -485,7 +489,7 @@ if __name__ == '__main__':
         if ckpt and ckpt.model_checkpoint_path:
             sess.run(tf.global_variables_initializer())
             saver.restore(sess, ckpt.model_checkpoint_path)
-            print('load the pretrained model parameters from: ', pretrain_path)
+            log_file.write("\n" + 'load the pretrained model parameters from: ', pretrain_path)
 
             # *********************************************************
             # get the performance from pretrained model.
@@ -499,16 +503,16 @@ if __name__ == '__main__':
                                (', '.join(['%.5f' % r for r in ret['recall']]),
                                 ', '.join(['%.5f' % r for r in ret['precision']]),
                                 ', '.join(['%.5f' % r for r in ret['ndcg']]))
-                print(pretrain_ret)
+                log_file.write("\n" + pretrain_ret)
         else:
             sess.run(tf.global_variables_initializer())
             cur_best_pre_0 = 0.
-            print('without pretraining.')
+            log_file.write("\n" + 'without pretraining.')
 
     else:
         sess.run(tf.global_variables_initializer())
         cur_best_pre_0 = 0.
-        print('without pretraining.')
+        log_file.write("\n" + 'without pretraining.')
 
     """
     *********************************************************
@@ -595,14 +599,14 @@ if __name__ == '__main__':
                                                  model.train_emb_loss: emb_loss, model.train_reg_loss: reg_loss})
         train_writer.add_summary(summary_train_loss, epoch)
         if np.isnan(loss) == True:
-            print('ERROR: loss is nan.')
+            log_file.write("\n" + 'ERROR: loss is nan.')
             sys.exit()
         
         if (epoch + 1) != args.epoch:
             if args.verbose > 0 and epoch % args.verbose == 0:
                 perf_str = 'Epoch %d [%.1fs]: train==[%.5f=%.5f + %.5f]' % (
                     epoch, time() - t1, loss, mf_loss, emb_loss)
-                print(perf_str)
+                log_file.write("\n" + perf_str)
             continue
         users_to_test = list(data_generator.train_items.keys())
         ret = test(sess, model, users_to_test ,drop_flag=True,train_set_flag=1)
@@ -611,7 +615,7 @@ if __name__ == '__main__':
                     ', '.join(['%.5f' % r for r in ret['recall']]),
                     ', '.join(['%.5f' % r for r in ret['precision']]),
                     ', '.join(['%.5f' % r for r in ret['ndcg']]))
-        print(perf_str)
+        log_file.write("\n" + perf_str)
         summary_train_acc = sess.run(model.merged_train_acc, feed_dict={model.train_rec_first: ret['recall'][0],
                                                                         model.train_rec_last: ret['recall'][-1],
                                                                         model.train_ndcg_first: ret['ndcg'][0],
@@ -670,7 +674,7 @@ if __name__ == '__main__':
                         ', '.join(['%.5f' % r for r in ret['recall']]),
                         ', '.join(['%.5f' % r for r in ret['precision']]),
                         ', '.join(['%.5f' % r for r in ret['ndcg']]))
-            print(perf_str)
+            log_file.write("\n" + perf_str)
             
         cur_best_pre_0, stopping_step, should_stop = early_stopping(ret['recall'][0], cur_best_pre_0,
                                                                     stopping_step, expected_order='acc', flag_step=10)
@@ -684,7 +688,7 @@ if __name__ == '__main__':
         # save the user & item embeddings for pretraining.
         if ret['recall'][0] == cur_best_pre_0 and args.save_flag == 1:
             save_saver.save(sess, weights_save_path + '/weights', global_step=epoch)
-            print('save the weights in path: ', weights_save_path)
+            log_file.write("\n" + 'save the weights in path: ', weights_save_path)
     recs = np.array(rec_loger)
     pres = np.array(pre_loger)
     ndcgs = np.array(ndcg_loger)
@@ -696,7 +700,7 @@ if __name__ == '__main__':
                  (idx, time() - t0, '\t'.join(['%.5f' % r for r in recs[idx]]),
                   '\t'.join(['%.5f' % r for r in pres[idx]]),
                   '\t'.join(['%.5f' % r for r in ndcgs[idx]]))
-    print(final_perf)
+    log_file.write("\n" + final_perf)
 
     save_path = '%sresult/%s_%s.result' % (args.weights_path, args.dataset, model.model_type)
     ensureDir(save_path)
