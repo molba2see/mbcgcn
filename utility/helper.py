@@ -12,7 +12,9 @@ def set_log_file(path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     LOG_FILE = open(path, "a")
 
-def log(msg, console=False):
+def log(*args, console=False):
+    msg = " ".join(str(x) for x in args)
+
     if LOG_FILE:
         LOG_FILE.write(msg + "\n")
         LOG_FILE.flush()

@@ -224,7 +224,7 @@ class MBCGCN(object):
             all_weights_one['item_embedding4'] = tf.Variable(initializer([self.n_items, self.emb_dim]), name='item_embedding4')
             all_weights_one['user_embedding5'] = tf.Variable(initializer([self.n_users, self.emb_dim]), name='user_embedding5')
             all_weights_one['item_embedding5'] = tf.Variable(initializer([self.n_items, self.emb_dim]), name='item_embedding5')
-            log.write("\n" + 'using random initialization')#log.write("\n" + 'using xavier initialization') 
+            log('using random initialization')#log('using xavier initialization') 
         else: 
             all_weights_one['user_embedding1'] = tf.Variable(initial_value=self.pretrain_data5['user_embed'], trainable=True,
                                                         name='user_embedding1', dtype=tf.float32) 
@@ -246,8 +246,8 @@ class MBCGCN(object):
                                                         name='user_embedding5', dtype=tf.float32)
             all_weights_one['item_embedding5'] = tf.Variable(initial_value=self.pretrain_data['item_embed'], trainable=True,
                                                         name='item_embedding5', dtype=tf.float32)
-            log.write("\n" + all_weights_one)
-            log.write("\n" + 'using pretrained initialization')
+            log(all_weights_one)
+            log('using pretrained initialization')
 
         'user'
         all_weights_one['W_u1'] = tf.Variable(initializer([self.emb_dim, self.emb_dim]), name='W_u1')
@@ -446,7 +446,7 @@ def load_pretrained_data():
         pretrain_data3 = np.load(pretrain_path3)
         pretrain_data4 = np.load(pretrain_path4)
         pretrain_data5 = np.load(pretrain_path5)
-        log.write("\n" + 'load the pretrained embeddings.') 
+        log('load the pretrained embeddings.') 
     except Exception:
         pretrain_data = None
         pretrain_data2 = None
@@ -523,23 +523,23 @@ if __name__ == '__main__':
 
     if args.adj_type == 'plain':
         config['norm_adj'] = plain_adj
-        log.write("\n" + 'use the plain adjacency matrix') 
+        log('use the plain adjacency matrix') 
     elif args.adj_type == 'norm':
         config['norm_adj'] = norm_adj
-        log.write("\n" + 'use the normalized adjacency matrix')
+        log('use the normalized adjacency matrix')
     elif args.adj_type == 'gcmc':
         config['norm_adj'] = mean_adj
-        log.write("\n" + 'use the gcmc adjacency matrix') 
+        log('use the gcmc adjacency matrix') 
     elif args.adj_type=='pre':
         config['norm_adj']=pre_adj
         config['norm_adj2']=pre_adj2
         config['norm_adj3']=pre_adj3 
         config['norm_adj4']=pre_adj4 
         config['norm_adj5']=pre_adj5 
-        log.write("\n" + 'use the pre adjcency matrix')
+        log('use the pre adjcency matrix')
     else:
         config['norm_adj'] = mean_adj + sp.eye(mean_adj.shape[0])
-        log.write("\n" + 'use the mean adjacency matrix')
+        log('use the mean adjacency matrix')
     t0 = time()
     if args.pretrain == -1: 
         pretrain_data = load_pretrained_data()
@@ -566,9 +566,9 @@ if __name__ == '__main__':
         pretrain_path3 = f"{args.weights_path}weights/{args.dataset3}_GCN"
         pretrain_path4 = f"{args.weights_path}weights/{args.dataset4}_GCN"
         pretrain_path5 = f"{args.weights_path}weights/{args.dataset5}_GCN"
-        log.write("\n" + pretrain_path)
+        log(pretrain_path)
         ckpt = tf.train.get_checkpoint_state(os.path.dirname(pretrain_path + '/checkpoint')) 
-        log.write("\n" + ckpt)
+        log(ckpt)
         ckpt2 = tf.train.get_checkpoint_state(os.path.dirname(pretrain_path2 + '/checkpoint'))
         ckpt3 = tf.train.get_checkpoint_state(os.path.dirname(pretrain_path3 + '/checkpoint'))
         ckpt4 = tf.train.get_checkpoint_state(os.path.dirname(pretrain_path4 + '/checkpoint'))
@@ -579,14 +579,14 @@ if __name__ == '__main__':
 
                 saver.restore(sess, tf.train.latest_checkpoint(pretrain_path)) 
                 graph = tf.get_default_graph()
-                log.write("\n" + graph.get_tensor_by_name("user_embedding:0"))
-                log.write("\n" + graph.get_tensor_by_name("item_embedding:0"))
+                log(graph.get_tensor_by_name("user_embedding:0"))
+                log(graph.get_tensor_by_name("item_embedding:0"))
                 user_embedding = sess.run('user_embedding:0')
                 item_embedding = sess.run('item_embedding:0')
-                log.write("\n" + 'load the pretrained model parameters from: ', pretrain_path)
+                log('load the pretrained model parameters from: ', pretrain_path)
                 pretrain_data = dict()
                 pretrain_data = {'user_embed':user_embedding, 'item_embed': item_embedding}
-                log.write("\n" + 'load the pretrained data ')
+                log('load the pretrained data ')
             tf.reset_default_graph()
 
 
@@ -596,15 +596,15 @@ if __name__ == '__main__':
 
                 saver.restore(sess, tf.train.latest_checkpoint(pretrain_path2)) 
                 graph = tf.get_default_graph()
-                log.write("\n" + graph.get_tensor_by_name("user_embedding:0"))
-                log.write("\n" + graph.get_tensor_by_name("item_embedding:0"))
+                log(graph.get_tensor_by_name("user_embedding:0"))
+                log(graph.get_tensor_by_name("item_embedding:0"))
                 user_embedding2 = sess.run('user_embedding:0')
                 item_embedding2 = sess.run('item_embedding:0')
 
-                log.write("\n" + 'load the pretrained model parameters from: ', pretrain_path2)
+                log('load the pretrained model parameters from: ', pretrain_path2)
                 pretrain_data2 = dict()
                 pretrain_data2 = {'user_embed':user_embedding2, 'item_embed': item_embedding2}           
-                log.write("\n" + 'load the pretrained data2 ')
+                log('load the pretrained data2 ')
             tf.reset_default_graph()
 
 
@@ -613,27 +613,27 @@ if __name__ == '__main__':
                 saver = tf.train.import_meta_graph(ckpt3.model_checkpoint_path + '.meta') 
                 saver.restore(sess, tf.train.latest_checkpoint(pretrain_path3)) 
                 graph = tf.get_default_graph()
-                log.write("\n" + graph.get_tensor_by_name("user_embedding:0"))
-                log.write("\n" + graph.get_tensor_by_name("item_embedding:0"))
+                log(graph.get_tensor_by_name("user_embedding:0"))
+                log(graph.get_tensor_by_name("item_embedding:0"))
                 user_embedding3 = sess.run('user_embedding:0')
                 item_embedding3 = sess.run('item_embedding:0')
-                log.write("\n" + 'load the pretrained model parameters from: ', pretrain_path3)
+                log('load the pretrained model parameters from: ', pretrain_path3)
                 pretrain_data3 = dict()
                 pretrain_data3 = {'user_embed':user_embedding3, 'item_embed': item_embedding3}
                 
-                log.write("\n" + 'load the pretrained data3 ')
+                log('load the pretrained data3 ')
             tf.reset_default_graph()
         
         else: 
             sess = tf.Session()
             sess.run(tf.global_variables_initializer())
             cur_best_pre_0 = 0.
-            log.write("\n" + 'without pretraining.')
+            log('without pretraining.')
         pretrain_data['u1_u1_W1'] = pretrain_data['user_embed'] 
         cur_best_pre_0 = 0.
     else:
         cur_best_pre_0 = 0.
-        log.write("\n" + 'without pretraining.')
+        log('without pretraining.')
     model = MBCGCN(data_config=config, pretrain_data=pretrain_data, pretrain_data2=pretrain_data2, pretrain_data3=pretrain_data3, pretrain_data4=pretrain_data4, pretrain_data5=pretrain_data5) #创建模型类的对象
 
     
@@ -700,8 +700,8 @@ if __name__ == '__main__':
     
     # sess = tf.Session(config=config)            
     sess.run(tf.global_variables_initializer())
-    log.write("\n" + 'i_here')
-    log.write("\n" + sess.run(model.weights_one))
+    log('i_here')
+    log(sess.run(model.weights_one))
     for epoch in range(1, args.epoch + 1): 
         t1 = time() #time
         loss, mf_loss, emb_loss, reg_loss = 0., 0., 0., 0. 
@@ -737,14 +737,14 @@ if __name__ == '__main__':
                                                  model.train_emb_loss: emb_loss, model.train_reg_loss: reg_loss}) #总
         train_writer.add_summary(summary_train_loss, epoch) 
         if np.isnan(loss) == True:
-            log.write("\n" + 'ERROR: loss is nan.')
+            log('ERROR: loss is nan.')
             sys.exit()
         
         if (epoch + 1) != args.epoch:
             if args.verbose > 0 and epoch % args.verbose == 0:
                 perf_str = 'Epoch %d [%.1fs]: train==[%.5f=%.5f + %.5f]' % (
                     epoch, time() - t1, loss, mf_loss, emb_loss) #Epoch 1 [218.3s]: train==[0.48727=0.48701 + 0.00025]
-                log.write("\n" + perf_str)
+                log(perf_str)
             continue
         users_to_test = list(data_generator.test_set.keys()) 
         ret = test(sess, model, users_to_test ,drop_flag=True,train_set_flag=1) 
@@ -753,7 +753,7 @@ if __name__ == '__main__':
                     ', '.join(['%.5f' % r for r in ret['recall']]),
                     ', '.join(['%.5f' % r for r in ret['precision']]),
                     ', '.join(['%.5f' % r for r in ret['ndcg']]))
-        log.write("\n" + perf_str) 
+        log(perf_str) 
         summary_train_acc = sess.run(model.merged_train_acc, feed_dict={model.train_rec_first: ret['recall'][0],
                                                                         model.train_rec_last: ret['recall'][-1],
                                                                         model.train_ndcg_first: ret['ndcg'][0],
@@ -812,7 +812,7 @@ if __name__ == '__main__':
                         ', '.join(['%.5f' % r for r in ret['recall']]),
                         ', '.join(['%.5f' % r for r in ret['precision']]),
                         ', '.join(['%.5f' % r for r in ret['ndcg']]))
-            log.write("\n" + perf_str)
+            log(perf_str)
             
         cur_best_pre_0, stopping_step, should_stop = early_stopping(ret['recall'][0], cur_best_pre_0,
                                                                     stopping_step, expected_order='acc', flag_step=5)
@@ -826,7 +826,7 @@ if __name__ == '__main__':
         # save the user & item embeddings for pretraining. 
         if ret['recall'][0] == cur_best_pre_0 and args.save_flag == 1:
             save_saver.save(sess, weights_save_path + '/weights', global_step=epoch)
-            log.write("\n" + 'save the weights in path: ', weights_save_path) 
+            log('save the weights in path: ', weights_save_path) 
     recs = np.array(rec_loger)
     pres = np.array(pre_loger)
     ndcgs = np.array(ndcg_loger)
@@ -838,7 +838,7 @@ if __name__ == '__main__':
                  (idx, time() - t0, '\t'.join(['%.5f' % r for r in recs[idx]]),
                   '\t'.join(['%.5f' % r for r in pres[idx]]),
                   '\t'.join(['%.5f' % r for r in ndcgs[idx]]))
-    log.write("\n" + final_perf)
+    log(final_perf)
 
     save_path = '%sresult/%s_%s.result' % (args.weights_path, args.dataset, model.model_type)
     ensureDir(save_path)
