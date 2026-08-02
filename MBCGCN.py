@@ -453,7 +453,7 @@ def load_pretrained_data():
         pretrain_data2 = None
         pretrain_data3 = None
         pretrain_data4 = None
-        pretrain_data4 = None
+        pretrain_data5 = None
     return pretrain_data, pretrain_data2, pretrain_data3, pretrain_data4, pretrain_data5
 
 
@@ -543,7 +543,7 @@ if __name__ == '__main__':
         log('use the mean adjacency matrix')
     t0 = time()
     if args.pretrain == -1: 
-        pretrain_data = load_pretrained_data()
+        pretrain_data, pretrain_data2, pretrain_data3, pretrain_data4, pretrain_data5 = load_pretrained_data()
     else:
         pretrain_data = None
         pretrain_data2 = None
@@ -623,6 +623,38 @@ if __name__ == '__main__':
                 pretrain_data3 = {'user_embed':user_embedding3, 'item_embed': item_embedding3}
                 
                 log('load the pretrained data3 ')
+            tf.reset_default_graph()
+
+        if ckpt4 and ckpt4.model_checkpoint_path:
+            with tf.Session() as sess:
+                saver = tf.train.import_meta_graph(ckpt4.model_checkpoint_path + '.meta') 
+                saver.restore(sess, tf.train.latest_checkpoint(pretrain_path4)) 
+                graph = tf.get_default_graph()
+                log(graph.get_tensor_by_name("user_embedding:0"))
+                log(graph.get_tensor_by_name("item_embedding:0"))
+                user_embedding4 = sess.run('user_embedding:0')
+                item_embedding4 = sess.run('item_embedding:0')
+                log('load the pretrained model parameters from: ', pretrain_path4)
+                pretrain_data4 = dict()
+                pretrain_data4 = {'user_embed':user_embedding4, 'item_embed': item_embedding4}
+                
+                log('load the pretrained data4 ')
+            tf.reset_default_graph()
+
+        if ckpt5 and ckpt5.model_checkpoint_path:
+            with tf.Session() as sess:
+                saver = tf.train.import_meta_graph(ckpt5.model_checkpoint_path + '.meta') 
+                saver.restore(sess, tf.train.latest_checkpoint(pretrain_path5)) 
+                graph = tf.get_default_graph()
+                log(graph.get_tensor_by_name("user_embedding:0"))
+                log(graph.get_tensor_by_name("item_embedding:0"))
+                user_embedding5 = sess.run('user_embedding:0')
+                item_embedding5 = sess.run('item_embedding:0')
+                log('load the pretrained model parameters from: ', pretrain_path5)
+                pretrain_data5 = dict()
+                pretrain_data5 = {'user_embed':user_embedding5, 'item_embed': item_embedding5}
+                
+                log('load the pretrained data5 ')
             tf.reset_default_graph()
         
         else: 
