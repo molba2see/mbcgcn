@@ -435,11 +435,12 @@ class MBCGCN(object):
         return pre_out * tf.div(1., keep_prob)
 
 def load_pretrained_data(): 
-    pretrain_path = '%spretrain/%s/%s.npz' % (args.proj_path, args.dataset, 'embedding') 
-    pretrain_path2 = '%spretrain/%s/%s.npz' % (args.proj_path2, args.dataset, 'embedding')
-    pretrain_path3 = '%spretrain/%s/%s.npz' % (args.proj_path3, args.dataset, 'embedding')
-    pretrain_path4 = '%spretrain/%s/%s.npz' % (args.proj_path4, args.dataset, 'embedding')
-    pretrain_path5 = '%spretrain/%s/%s.npz' % (args.proj_path5, args.dataset, 'embedding')
+    pretrain_path = f"{args.weights_path}weights/{args.dataset1}_GCN"
+    pretrain_path2 = f"{args.weights_path}weights/{args.dataset1}_GCN"
+    pretrain_path3 = f"{args.weights_path}weights/{args.dataset1}_GCN"
+    pretrain_path4 = f"{args.weights_path}weights/{args.dataset1}_GCN"
+    pretrain_path5 = f"{args.weights_path}weights/{args.dataset1}_GCN"
+    
     try: 
         pretrain_data = np.load(pretrain_path)
         pretrain_data2 = np.load(pretrain_path2)
